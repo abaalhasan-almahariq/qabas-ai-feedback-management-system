@@ -1,25 +1,22 @@
 # QABAS — AI-Powered Student Feedback Analysis & Management System
 
-QABAS (**Quality Assessment for Better Academic Services**) is a graduation-project web application for collecting, classifying, managing, and analyzing university student feedback.
+QABAS (**Quality Assessment for Better Academic Services**) is a graduation-project system for collecting, classifying, managing, and analyzing university student feedback.
 
-Students can submit course-related feedback directly or use an AI-assisted chat flow. The backend uses GPT-4o mini through a LangGraph pipeline to produce structured classification results such as category, sentiment, urgency, keywords, and a short summary. Administrators can then review, discuss, assign, track, and analyze feedback through a role-scoped dashboard.
+Students can submit course-related feedback directly or through an AI-assisted chat flow. The project used GPT-4o mini with a LangGraph classification pipeline to produce structured results such as category, sentiment, urgency, keywords, and a summary, while administrators could review, assign, track, discuss, and analyze feedback.
 
-> **Portfolio note:** this was a **3-member graduation project**, not a solo project. This repository is a cleaned portfolio edition of the team codebase. My main contributions were technical documentation, system design/architecture decisions, testing, backend routing/integration fixes, and database troubleshooting. The portfolio edition also contains post-project refactoring to better align the code structure with the final UML design; those refactors are documented below rather than presented as part of the original submission.
+> **Portfolio note:** QABAS was built by a **3-member graduation-project team**. My main contributions were technical documentation, system design and architecture decisions, testing, backend routing/integration fixes, and database troubleshooting. This repository is a curated post-graduation portfolio edition: selected implementation pieces were refactored to better match the final UML and those changes are documented separately from the original team submission.
 
-## Features
+## Features represented by the project
 
 - Student registration, login, email verification, and role-based access control
 - Course-scoped feedback submission
-- AI classification pipeline using GPT-4o mini and LangGraph
-- Category, sentiment, urgency, keyword, and summary extraction
-- Feedback lifecycle tracking: pending → classifying → classified → in progress → resolved / closed
-- Admin assignment and audit history
-- Student/admin discussion threads and WebSocket-based updates
-- AI-assisted student chat flow
-- Analytics dashboard and course-level statistics
+- AI classification for category, sentiment, urgency, keywords, and summaries
+- Feedback lifecycle and audit-history tracking
+- Student/admin discussion and real-time updates
+- AI-assisted feedback chat flow
+- Analytics and course-level statistics
 - Arabic/English interface support
-- Master/Advance/Basic admin permission tiers
-- Docker setup for frontend, backend, and PostgreSQL
+- Master / Advance / Basic administration tiers
 
 ## Tech Stack
 
@@ -28,172 +25,78 @@ Students can submit course-related feedback directly or use an AI-assisted chat 
 | Frontend | Angular 17, TypeScript, RxJS, Angular Material, Chart.js, ngx-translate |
 | Backend | Python, FastAPI, SQLModel, Pydantic |
 | AI | OpenAI GPT-4o mini, LangChain, LangGraph |
-| Data | SQLite for local development; PostgreSQL supported through Docker |
-| Auth / Security | JWT, bcrypt, RBAC, CSRF token checks |
+| Data | SQLite during local development; PostgreSQL support in the team project |
+| Auth / Security | JWT, bcrypt, RBAC, CSRF checks |
 | Real-time | FastAPI WebSocket + RxJS |
 | Testing | pytest, pytest-asyncio, httpx, Locust |
 | DevOps | Docker Compose, GitHub Actions |
 
-## Architecture
+## Final UML as the design reference
 
-The final design follows a **3-tier client-server architecture** with an AI classification pipeline inside the backend logic tier.
+The final project UML is treated as the source of truth for this portfolio refactor.
 
-![System architecture](docs/diagrams/system-architecture.png)
-
-The classification flow is organized as:
-
-**Preprocess → Classify → Postprocess → Escalation Check**
-
-![Backend pipeline](docs/diagrams/backend-pipeline.png)
-
-## UML & Design
-
-The final UML is the source of truth for the portfolio refactor.
-
-- [Portfolio class diagram (Mermaid)](docs/CLASS_DIAGRAM.md)
+- [Portfolio class diagram](docs/CLASS_DIAGRAM.md)
 - [UML-to-code mapping and design decisions](docs/UML_TO_CODE.md)
-- [Original class diagram](docs/diagrams/class-diagram.png)
-- [Activity diagram](docs/diagrams/activity-diagram.png)
-- [Data-flow diagram](docs/diagrams/data-flow-diagram.png)
-- [Entity-relationship diagram](docs/diagrams/erd.png)
-- [Use-case diagram](docs/diagrams/use-case-diagram.png)
+- [Post-graduation refactor notes](PORTFOLIO_REFACTOR.md)
 
-### Portfolio Refactor Highlights
+One small documentation correction is made transparently: the original class diagram contains a second box labelled `ChatMessage`, but its fields and operations describe an `AdminNote`. The portfolio diagram labels it `AdminNote`.
 
-The original implementation worked but did not always mirror the final UML structure. The portfolio edition therefore makes several targeted architectural changes while keeping the working API contract compatible:
+### Architecture alignment
 
-- Introduces a `FeedbackService` for the UML operations `submit`, `edit`, `rateSatisfaction`, and `getHistory` instead of keeping that business logic inside FastAPI route functions.
-- Adds an `AIClassificationPipeline` facade matching the UML pipeline entity while keeping the existing LangGraph nodes underneath.
-- Adds `backend/domain.py` aliases so the final UML term **Feedback** is represented cleanly while the legacy database/API name `Complaint` remains compatible.
-- Removes a duplicate feedback-history route.
-- Preserves the student's original Arabic feedback during English translation for classification.
-- Fixes the async database health check, authentication logout flow, application startup lifespan, and Docker database health dependency.
-- Removes local secrets, virtual environments, database files, IDE metadata, caches, and internal scratch files from the portfolio tree.
+The portfolio edition introduces several targeted changes rather than rewriting the entire team application:
 
-See [docs/UML_TO_CODE.md](docs/UML_TO_CODE.md) for the exact mapping.
+- `FeedbackService` centralizes the UML operations `submit`, `edit`, `rateSatisfaction`, and `getHistory`.
+- `AIClassificationPipeline` provides a domain-level facade over the LangGraph classification implementation.
+- `backend/domain.py` exposes the final UML term **Feedback** while keeping the original `Complaint` persistence/API vocabulary compatible.
+- The shared rate limiter is separated from the application entry point to avoid a circular import.
+- The refactor also addressed a duplicate feedback-history route, async health-check behavior, logout integration, startup lifecycle handling, and preservation of the student's original Arabic text during classification.
 
-## Screenshots
+## Selected portfolio implementation
+
+```text
+backend/
+├── core/
+│   └── rate_limit.py
+├── services/
+│   ├── ai_pipeline.py
+│   └── feedback_service.py
+└── domain.py
+
+docs/
+├── CLASS_DIAGRAM.md
+├── UML_TO_CODE.md
+└── screenshots/
+    └── feedback-dashboard.jpg
+
+.env.example
+.gitignore
+PORTFOLIO_REFACTOR.md
+README.md
+```
+
+This public repository focuses on the architecture, design mapping, and selected refactored implementation rather than publishing every file from the original team workspace. That keeps the portfolio focused and avoids presenting unrelated team code or local development material as my individual work.
+
+## Interface preview
 
 ### Feedback dashboard
 
 ![Feedback dashboard](docs/screenshots/feedback-dashboard.jpg)
 
-### Analytics dashboard
+> The interface uses development/demo data. Screenshots demonstrate the project UI and are not presented as production usage metrics.
 
-![Analytics dashboard](docs/screenshots/analytics-dashboard.jpg)
+## Security / repository hygiene
 
-### Arabic/English AI assistant
+The portfolio intentionally excludes the original `.env`, local databases, virtual environments, caches, IDE metadata, and other machine-specific files. `.env.example` contains placeholders only; real API keys and secrets should never be committed.
 
-![AI chatbot](docs/screenshots/chatbot-arabic.jpg)
+## My contribution
 
-### Login UI
+My work on the original graduation project focused heavily on:
 
-![Login screen](docs/screenshots/login-screen.jpg)
-
-> Some screenshots contain demo/prototype data used during development and are shown to demonstrate the interface rather than production metrics.
-
-## Project Structure
-
-```text
-QABAS/
-├── backend/
-│   ├── core/
-│   ├── graph/
-│   ├── models/
-│   ├── routers/
-│   ├── services/
-│   ├── domain.py
-│   └── main.py
-├── frontend/
-│   └── feedback-dashboard/
-├── tests/
-├── docs/
-│   ├── diagrams/
-│   └── screenshots/
-├── .github/workflows/
-├── docker-compose.yml
-├── seeder.py
-└── requirements.txt
-```
-
-## Running Locally
-
-### 1. Environment
-
-Copy the environment template:
-
-```bash
-cp .env.example .env
-```
-
-Set at minimum:
-
-```env
-OPENAI_API_KEY=your_key_here
-JWT_SECRET_KEY=your_long_random_secret
-ALLOWED_ORIGINS=http://localhost:4200
-```
-
-Do **not** commit `.env`.
-
-### 2. Backend
-
-```bash
-python -m venv .venv
-# Windows: .venv\Scripts\activate
-# Linux/macOS: source .venv/bin/activate
-pip install -r requirements.txt
-python seeder.py
-uvicorn backend.main:app --reload --port 8001
-```
-
-API documentation:
-
-- Swagger UI: `http://localhost:8001/docs`
-- ReDoc: `http://localhost:8001/redoc`
-- Health: `http://localhost:8001/api/health`
-
-### 3. Frontend
-
-```bash
-cd frontend/feedback-dashboard
-npm install --legacy-peer-deps
-npm start
-```
-
-Frontend: `http://localhost:4200`
-
-## Docker
-
-```bash
-cp .env.example .env
-# Fill in real secrets first
-docker compose up --build
-```
-
-The Docker configuration starts PostgreSQL, the FastAPI backend, and the Angular frontend.
-
-## Tests
-
-```bash
-pytest -v
-```
-
-The repository includes unit, RBAC, JWT, API, end-to-end, and load-testing files from the project.
-
-## Security Notes
-
-This portfolio edition intentionally excludes the original `.env`, local database, and development virtual environment. Replace all example credentials before any real deployment. The application was built as an academic project and should receive a full production security review before handling real institutional data.
-
-## Team Project / My Contribution
-
-This system was built by a three-member multidisciplinary graduation-project team. My contribution focused heavily on:
-
-- technical documentation and keeping the design specification coherent;
+- technical documentation and maintaining a coherent design specification;
 - system architecture and design decisions;
 - software testing and validation;
-- backend routing/integration troubleshooting;
+- backend routing and integration troubleshooting;
 - database troubleshooting and fixes;
-- cross-team work between frontend, backend, database, and AI components.
+- collaboration across frontend, backend, database, and AI work.
 
-The source in this portfolio remains representative of a **team project**. The post-graduation cleanup/refactor in this repository is separate from the original team contribution and is documented as such.
+The post-graduation code cleanup in this repository is identified as a **portfolio refactor** rather than being presented as part of the original submitted implementation.
