@@ -66,7 +66,7 @@ docs/
 ├── CLASS_DIAGRAM.md
 ├── UML_TO_CODE.md
 └── screenshots/
-    └── feedback-dashboard.jpg
+    └── feedback-dashboard.png
 
 .env.example
 .gitignore
@@ -80,7 +80,7 @@ This public repository focuses on the architecture, design mapping, and selected
 
 ### Feedback dashboard
 
-![Feedback dashboard](docs/screenshots/feedback-dashboard.jpg)
+![Feedback dashboard](docs/screenshots/feedback-dashboard.png)
 
 > The interface uses development/demo data. Screenshots demonstrate the project UI and are not presented as production usage metrics.
 
